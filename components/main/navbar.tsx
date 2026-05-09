@@ -1,0 +1,133 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export function Navbar() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const toggleMenu = () => setIsOpen(!isOpen);
+
+    const navLinks = [
+        { name: 'Portfolio', href: '#portfolio' },
+        { name: 'Service', href: '#process' },
+        { name: 'Contact', href: '#contact' },
+    ];
+
+    return (
+        <motion.nav
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 md:p-5 px-4 md:px-6 pointer-events-none"
+        >
+            <div className="w-full max-w-[1400px] h-16 bg-black/30 backdrop-blur-xl border border-white/10 rounded-[20px] flex items-center justify-between px-4 md:px-8 pointer-events-auto transition-all duration-300">
+                {/* Left: Logo + Text */}
+                <Link href="/" className="flex items-center gap-1 no-underline z-50">
+                    <div className="flex items-center">
+                        <Image
+                            src="/Black.svg"
+                            alt="xtio studio logo"
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                        />
+                    </div>
+                    <span className="text-white text-[1.25rem] font-bold tracking-[-0.02em] font-suit">
+                        Atio studio
+                    </span>
+                </Link>
+
+                {/* Center: Desktop Navigation Links */}
+                <div className="hidden md:flex items-center gap-8">
+                    {navLinks.map((link) => (
+                        <Link 
+                            key={link.name} 
+                            href={link.href}
+                            className="text-white/60 no-underline text-[0.9375rem] font-medium transition-colors hover:text-white font-pretendard"
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                </div>
+
+                {/* Right: Desktop Button & Mobile Toggle */}
+                <div className="flex items-center gap-4">
+                    <Link href="#get-started" className="no-underline hidden sm:block">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-white text-black px-5 py-2.5 rounded-xl text-[0.875rem] font-bold cursor-pointer font-pretendard"
+                        >
+                            Get Started
+                        </motion.button>
+                    </Link>
+
+                    {/* Mobile Menu Toggle */}
+                    <button 
+                        onClick={toggleMenu}
+                        className="md:hidden flex flex-col justify-center items-center gap-1.5 w-10 h-10 z-50 pointer-events-auto"
+                        aria-label="Toggle Menu"
+                    >
+                        <motion.span 
+                            animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+                            className="w-6 h-0.5 bg-white block rounded-full"
+                        />
+                        <motion.span 
+                            animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
+                            className="w-6 h-0.5 bg-white block rounded-full"
+                        />
+                        <motion.span 
+                            animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+                            className="w-6 h-0.5 bg-white block rounded-full"
+                        />
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, clipPath: 'circle(0% at 90% 5%)' }}
+                        animate={{ opacity: 1, clipPath: 'circle(150% at 90% 5%)' }}
+                        exit={{ opacity: 0, clipPath: 'circle(0% at 90% 5%)' }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed inset-0 bg-black/95 z-40 flex flex-col items-center justify-center gap-8 pointer-events-auto"
+                    >
+                        {navLinks.map((link, idx) => (
+                            <motion.div
+                                key={link.name}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 * idx + 0.2 }}
+                            >
+                                <Link 
+                                    href={link.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-white text-3xl font-bold font-suit hover:text-white/60 transition-colors"
+                                >
+                                    {link.name}
+                                </Link>
+                            </motion.div>
+                        ))}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="mt-4"
+                        >
+                            <Link href="#get-started" onClick={() => setIsOpen(false)}>
+                                <button className="bg-white text-black px-8 py-4 rounded-2xl text-lg font-bold font-pretendard">
+                                    Get Started
+                                </button>
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.nav>
+    );
+}
