@@ -23,9 +23,9 @@ export function Navbar() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 md:p-5 px-4 md:px-6 pointer-events-none"
         >
-            <div className="w-full max-w-[1400px] h-16 bg-black/30 backdrop-blur-xl border border-white/10 rounded-[20px] flex items-center justify-between px-4 md:px-8 pointer-events-auto transition-all duration-300">
+            <div className="w-full max-w-[1400px] h-[68px] bg-black/30 backdrop-blur-xl border border-white/10 rounded-[34px] flex items-center justify-between px-[12px] pointer-events-auto transition-all duration-300">
                 {/* Left: Logo + Text */}
-                <Link href="/" className="flex items-center gap-1 no-underline z-50">
+                <Link href="/" className="flex items-center gap-1 no-underline z-50 pl-2">
                     <div className="flex items-center">
                         <Image
                             src="/Black.svg"
@@ -55,13 +55,36 @@ export function Navbar() {
 
                 {/* Right: Desktop Button & Mobile Toggle */}
                 <div className="flex items-center gap-4">
-                    <Link href="#get-started" className="no-underline hidden sm:block">
+                    <Link href="#contact" className="no-underline hidden sm:block">
                         <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="bg-white text-black px-5 py-2.5 rounded-xl text-[0.875rem] font-bold cursor-pointer font-pretendard"
+                            initial="initial"
+                            whileHover="hover"
+                            whileTap="tap"
+                            variants={{
+                                initial: { scale: 1, backgroundColor: "#ffffff" },
+                                hover: { backgroundColor: "#f0f0f0" },
+                                tap: { scale: 0.95 }
+                            }}
+                            className="text-black px-6 h-[44px] rounded-full text-[0.875rem] font-bold cursor-pointer font-pretendard flex items-center gap-2"
                         >
-                            Get Started
+                            프로젝트 문의
+                            <motion.div
+                                variants={{
+                                    initial: { x: 0 },
+                                    hover: { 
+                                        x: [0, 4, 0],
+                                        transition: { 
+                                            duration: 0.8, 
+                                            repeat: Infinity,
+                                            ease: "easeInOut" 
+                                        }
+                                    }
+                                }}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </motion.div>
                         </motion.button>
                     </Link>
 
@@ -119,10 +142,37 @@ export function Navbar() {
                             transition={{ delay: 0.5 }}
                             className="mt-4"
                         >
-                            <Link href="#get-started" onClick={() => setIsOpen(false)}>
-                                <button className="bg-white text-black px-8 py-4 rounded-2xl text-lg font-bold font-pretendard">
-                                    Get Started
-                                </button>
+                            <Link href="#contact" onClick={() => setIsOpen(false)}>
+                                <motion.button
+                                    initial="initial"
+                                    whileHover="hover"
+                                    whileTap="tap"
+                                    variants={{
+                                        initial: { scale: 1, backgroundColor: "#ffffff" },
+                                        hover: { backgroundColor: "#f0f0f0" },
+                                        tap: { scale: 0.95 }
+                                    }}
+                                    className="text-black px-8 py-4 rounded-full text-lg font-bold font-pretendard flex items-center gap-3"
+                                >
+                                    프로젝트 문의
+                                    <motion.div
+                                        variants={{
+                                            initial: { x: 0 },
+                                            hover: { 
+                                                x: [0, 6, 0],
+                                                transition: { 
+                                                    duration: 0.8, 
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut" 
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M5 12h14M12 5l7 7-7 7" />
+                                        </svg>
+                                    </motion.div>
+                                </motion.button>
                             </Link>
                         </motion.div>
                     </motion.div>

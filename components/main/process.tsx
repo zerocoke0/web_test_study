@@ -33,20 +33,16 @@ const steps = [
 
 export function Process() {
     return (
-        <section id="process" className="relative w-full py-32 bg-[#F8F9FA] shadow-[inset_0_20px_40px_rgba(0,0,0,0.02)]">
-            {/* Top/Bottom Depth Gradients */}
-            <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/[0.03] to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/[0.03] to-transparent pointer-events-none" />
-            
+        <section id="process" className="relative w-full py-32 bg-[#F8F9FA] shadow-[inset_0_20px_40px_rgba(0,0,0,0.01)] border-t border-black/5">
             <div className="max-w-[1400px] mx-auto px-6 md:px-8 relative z-10">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
-                    <div className="max-w-2xl">
+                <div className="flex flex-col mb-24 gap-10">
+                    <div className="max-w-3xl">
                         <motion.span
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="text-[0.875rem] font-semibold tracking-[0.2em] uppercase text-black/40 font-pretendard"
+                            className="text-[0.875rem] font-semibold tracking-[0.2em] uppercase text-black/40 font-pretendard mb-4 block"
                         >
                             Our Process
                         </motion.span>
@@ -55,61 +51,63 @@ export function Process() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-bold text-black mt-4 font-suit tracking-tight leading-[1.2]"
+                            className="text-4xl md:text-[80px] font-bold text-black font-suit tracking-tight leading-[1.1] break-keep"
                         >
-                            압도적인 결과물을 만드는<br />5가지 단계
+                            압도적인 결과물을<br className="hidden md:block" /> 만드는 5가지 단계
                         </motion.h2>
+                        
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="mt-6 md:mt-10 text-lg md:text-2xl text-black/70 font-medium font-pretendard max-w-2xl leading-relaxed break-keep"
+                        >
+                            기획부터 배포까지, 단 1주일이면 충분합니다.<br className="hidden md:block" /> 
+                            투명한 공유와 빠른 실행력으로 성공을 가속화합니다.
+                        </motion.p>
                     </div>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                        className="text-black/50 text-lg font-medium font-pretendard max-w-sm leading-relaxed break-keep"
-                    >
-                        기획부터 배포까지, 모든 과정은 투명하게 공유되며<br className="hidden md:block" /> 비즈니스 성공에 집중합니다.
-                    </motion.p>
                 </div>
 
                 {/* Steps List */}
                 <div className="flex flex-col border-t border-black/10">
                     {steps.map((step, idx) => (
-                        <motion.div
+                        <motion.article
                             key={step.no}
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
-                            className="group relative flex flex-col md:flex-row md:items-center py-12 border-b border-black/10 hover:bg-black/[0.02] transition-colors duration-500"
+                            className="group relative flex flex-col md:flex-row md:items-center py-12 border-b border-black/10 hover:bg-black/[0.02] transition-all duration-300 px-4 md:px-8"
                         >
                             {/* Number */}
                             <div className="flex-shrink-0 mb-4 md:mb-0 md:w-32">
-                                <span className="text-4xl md:text-5xl font-bold text-black/10 group-hover:text-black transition-colors duration-500 font-suit">
+                                <span className="text-4xl md:text-5xl font-bold text-black/15 group-hover:text-black/30 transition-colors duration-300 font-suit">
                                     {step.no}
                                 </span>
                             </div>
 
                             {/* Title */}
                             <div className="md:w-1/3 mb-4 md:mb-0">
-                                <h3 className="text-2xl md:text-3xl font-bold text-black font-suit group-hover:translate-x-2 transition-transform duration-500">
+                                <h3 className="text-2xl md:text-3xl font-bold text-black/80 group-hover:text-black group-hover:translate-x-2 transition-all duration-300 font-suit">
                                     {step.title}
                                 </h3>
                             </div>
 
                             {/* Description */}
                             <div className="md:flex-1">
-                                <p className="text-black/60 text-lg font-medium font-pretendard leading-relaxed group-hover:text-black/90 transition-colors duration-500 break-keep">
+                                <p className="text-black/40 text-lg font-medium font-pretendard leading-relaxed group-hover:text-black/80 transition-colors duration-300 break-keep">
                                     {step.description}
                                 </p>
                             </div>
 
                             {/* Arrow (Desktop Only) */}
-                            <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-500 ml-8">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <div className="hidden md:block opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300 ml-8">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black/80">
                                     <path d="M5 12h14M12 5l7 7-7 7" />
                                 </svg>
                             </div>
-                        </motion.div>
+                        </motion.article>
                     ))}
                 </div>
             </div>

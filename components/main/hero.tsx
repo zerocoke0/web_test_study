@@ -140,7 +140,7 @@ export function Hero({
     }, []);
 
     return (
-        <div className={`relative w-full h-screen overflow-hidden bg-black ${className || ''}`}>
+        <section id="hero" className={`relative w-full h-screen overflow-hidden bg-black ${className || ''}`}>
             {/* Shader Background Container */}
             <div
                 ref={containerRef}
@@ -150,37 +150,55 @@ export function Hero({
             {/* Gradient Overlay for Smooth Transition to next section */}
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10" />
 
-            {/* Content Layer */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 w-full max-w-[1000px] px-6 flex flex-col items-center gap-8 pointer-events-none">
-                <div className="flex flex-col gap-2">
-                    <motion.span
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="text-[0.875rem] font-semibold tracking-[0.2em] uppercase text-white/50 font-pretendard"
-                    >
-                        Premium Web Development
-                    </motion.span>
-                    <motion.h1
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.2] font-suit"
-                    >
-                        고객이 이해하고,<br />
-                        신뢰하며, 문의하는<br className="md:hidden" /> 웹사이트
-                    </motion.h1>
-                </div>
+            {/* Center Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-black/20 z-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_70%)] z-10" />
 
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.4 }}
-                    className="text-base md:text-lg text-white/70 max-w-3xl font-medium leading-[1.6] tracking-[-0.02em] font-pretendard break-keep"
-                >
-                    서비스 소개부터 문의 흐름까지, 고객이 망설이는 지점을 먼저 정리합니다.<br className="hidden md:block" />
-                    기획·카피·디자인·개발을 하나의 흐름으로 설계해 사업을 설득하는 웹사이트를 만듭니다.
-                </motion.p>
+            {/* Content Layer */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 w-full max-w-[1400px] px-6 flex flex-col items-center gap-12 pointer-events-none">
+                <div className="flex flex-col items-center gap-4">
+                    {/* Urgency Badge (Dark Pattern) */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.8, duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                    >
+                        <div className="relative flex h-2 w-2 mr-1">
+                            <motion.span
+                                animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                className="absolute inline-flex h-full w-full rounded-full bg-purple-400"
+                            />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                        </div>
+                        <span className="text-[0.75rem] md:text-[0.8125rem] font-semibold text-white/90 tracking-wider font-pretendard">
+                            [Early Bird] 선착순 10팀 한정 런칭가 혜택
+                        </span>
+                    </motion.div>
+
+                    <div className="flex flex-col gap-2">
+                        <motion.h1
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                            className="text-4xl md:text-7xl lg:text-[88px] font-bold text-white tracking-tight leading-[1.1] font-suit"
+                        >
+                            고객이 이해하고,<br />
+                            신뢰하며, 문의하는<br className="md:hidden" /> 웹사이트
+                        </motion.h1>
+                    </div>
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1, delay: 0.4 }}
+                        className="text-base md:text-lg text-white/70 max-w-3xl font-medium leading-[1.6] tracking-[-0.02em] font-pretendard break-keep"
+                    >
+                        서비스 소개부터 문의 흐름까지, 고객이 망설이는 지점을 먼저 정리합니다.<br className="hidden md:block" />
+                        기획·카피·디자인·개발을 하나의 흐름으로 설계해 사업을 설득하는 웹사이트를 만듭니다.
+                    </motion.p>
+                </div>
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -188,14 +206,38 @@ export function Hero({
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="pointer-events-auto"
                 >
-                    <button className="px-10 py-[18px] rounded-full bg-white text-black text-[1.125rem] font-bold flex items-center gap-3 cursor-pointer border-none shadow-[0_10px_30px_rgba(255,255,255,0.1)] transition-all hover:scale-105 hover:bg-[#f0f0f0] font-pretendard">
+                    <motion.button
+                        initial="initial"
+                        whileHover="hover"
+                        whileTap="tap"
+                        variants={{
+                            initial: { scale: 1, backgroundColor: "#ffffff" },
+                            hover: { backgroundColor: "#f0f0f0" },
+                            tap: { scale: 0.95 }
+                        }}
+                        className="px-10 py-[18px] rounded-full text-black text-[1.125rem] font-bold flex items-center gap-3 cursor-pointer border-none shadow-[0_10px_30px_rgba(255,255,255,0.1)] font-pretendard"
+                    >
                         프로젝트 문의하기
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </button>
+                        <motion.div
+                            variants={{
+                                initial: { x: 0 },
+                                hover: {
+                                    x: [0, 8, 0],
+                                    transition: {
+                                        duration: 0.8,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }
+                                }
+                            }}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </motion.div>
+                    </motion.button>
                 </motion.div>
             </div>
-        </div>
+        </section>
     );
 }
