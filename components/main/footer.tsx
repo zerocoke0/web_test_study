@@ -70,7 +70,7 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-white/20 text-sm font-medium font-pretendard">
-                        © 2024 Atio Studio. All Rights Reserved.
+                        © 2026 Atio Studio. All Rights Reserved.
                     </p>
                     <div className="flex gap-8">
                         <Link href="#" className="text-white/20 hover:text-white transition-colors text-sm font-medium font-pretendard">

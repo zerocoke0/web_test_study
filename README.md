@@ -49,4 +49,4 @@
 3. **가로폭**: 전체 섹션 가로 최대폭 1400px 유지.
 
 ---
-© 2024 Atio Studio. All Rights Reserved.
+© 2026 Atio Studio. All Rights Reserved.
