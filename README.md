@@ -25,6 +25,22 @@
 - `/components/ui`: 스무스 스크롤 등 공통 UI 컴포넌트
 - `/public`: SVG 로고 및 이미지 자산
 
+## ⚡ 성능 최적화 (Performance Optimization)
+
+구글 라이트하우스(Lighthouse) 점수 개선을 위해 다음과 같은 최적화 작업을 수행했습니다.
+
+- **Font Optimization**: 외부 CDN 의존성을 제거하고 `next/font/local`을 통한 로컬 폰트 호스팅 및 `display: swap` 전략 적용. (기존 624KB 로딩 병목 해소)
+- **Image LCP & Quality**: 
+  - 포트폴리오 이미지의 WebP 변환 및 최적 해상도 유지.
+  - `fetchPriority="high"` 및 `sizes` 속성 적용으로 LCP 요소 로딩 속도 극대화.
+  - 불필요한 이미지 최적화 중복 방지를 위한 `unoptimized` 설정 및 고화질 자산 관리.
+- **Main Thread Work Reduction**:
+  - Hero 섹션의 Three.js 쉐이더 초기화 지연(100ms) 및 연산 루프 최적화.
+  - 전역 SVG 노이즈 필터(`feTurbulence`)의 복잡도 감소(`numOctaves` 3 -> 2).
+  - 무거운 애니메이션(`animate-pulse`) 최적화 및 메인 스레드 점유 시간 단축.
+- **Bundle Optimization**: `next/dynamic`을 활용하여 화면 하단(Below the fold) 컴포넌트의 지연 로딩 구현.
+- **SEO & Metadata**: 테마 컬러, 뷰포트 설정, Apple 아이콘 등 필수 메타데이터 보강을 통한 Best Practices 점수 개선.
+
 ## 📝 개발 가이드라인
 
 본 프로젝트는 다음의 디자인 및 개발 원칙을 준수합니다.

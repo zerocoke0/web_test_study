@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const suitVariable = localFont({
+  src: "../public/fonts/SUIT-Variable.woff2",
+  variable: "--font-suit",
+  display: "swap",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +49,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/Black.svg",
+    apple: "/Black.svg",
   }
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#000000",
 };
 
 import { VisualEffects } from "@/components/ui/visual-effects";
@@ -56,7 +70,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${suitVariable.variable} h-full antialiased`}
     >
       <head>
         <script

@@ -11,7 +11,7 @@ const projects = [
         category: 'SaaS / Web Application',
         year: '2024',
         description: '복잡한 데이터를 우아한 시각 언어로 풀어낸 차세대 비즈니스 대시보드입니다.',
-        image: '/images/project-1.webp',
+        image: '/images/project-1_v7.webp',
         size: 'large', 
     },
     {
@@ -20,7 +20,7 @@ const projects = [
         category: 'Branding / Landing Page',
         year: '2024',
         description: '감각적인 비주얼과 압도적인 카피로 고객의 행동을 이끌어내는 고전환 랜딩페이지입니다.',
-        image: '/images/project-2.webp',
+        image: '/images/project-2_v6.webp',
         size: 'small',
     },
     {
@@ -97,7 +97,12 @@ export function Portfolio() {
                                     src={project.image}
                                     alt={project.title}
                                     fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                                    quality={100}
+                                    priority={idx === 0}
+                                    fetchPriority={idx === 0 ? "high" : "auto"}
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    unoptimized
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105 group-hover:brightness-110"
                                 />
                                 {/* Mobile Info (Always visible on small screens) */}
                                 <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden">

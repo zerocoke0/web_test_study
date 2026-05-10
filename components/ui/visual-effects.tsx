@@ -12,7 +12,7 @@ export function VisualEffects() {
                         <feTurbulence 
                             type="fractalNoise" 
                             baseFrequency="0.65" 
-                            numOctaves="3" 
+                            numOctaves="2" 
                             stitchTiles="stitch" 
                         />
                     </filter>
@@ -22,7 +22,7 @@ export function VisualEffects() {
 
             {/* Background Glow Blobs for Dark Sections (Common) */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/[0.02] blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/[0.02] blur-[120px] rounded-full" />
                 <div className="absolute bottom-[10%] right-[-5%] w-[40%] h-[40%] bg-white/[0.01] blur-[100px] rounded-full" />
             </div>
         </>

@@ -1,5 +1,3 @@
-@import url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css');
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import "tailwindcss";
 
 :root {
@@ -12,8 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-suit: "SUIT Variable", sans-serif;
-  --font-pretendard: "Pretendard", sans-serif;
+  --font-suit: var(--font-suit);
+  --font-pretendard: var(--font-suit);
 }
 
 @media (prefers-color-scheme: dark) {
