@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://web-test-study.netlify.app'),
   title: "Atio Studio | 압도적인 성과를 만드는 프리미엄 웹 에이전시",
   description: "기획부터 배포까지 단 1주일. 비즈니스의 가치를 증명하는 고감도 랜딩페이지와 웹 어플리케이션을 제작합니다.",
   keywords: ["웹 에이전시", "랜딩페이지 제작", "홈페이지 제작", "Atio Studio", "프리미엄 웹디자인", "Next.js 에이전시"],
