@@ -1,253 +1,345 @@
 'use client';
 
-import React, { useRef, useEffect, CSSProperties } from 'react';
-import { motion } from 'framer-motion';
-import * as THREE from 'three';
+import React, { useRef, useEffect } from 'react';
 
+// Types for component props
 interface HeroProps {
-    color?: string;
-    style?: CSSProperties;
-    className?: string;
+  trustBadge?: {
+    text: string;
+    icons?: string[];
+  };
+  headline: {
+    line1: string;
+    line2: string;
+  };
+  subtitle: string;
+  buttons?: {
+    primary?: {
+      text: string;
+      onClick?: () => void;
+    };
+    secondary?: {
+      text: string;
+      onClick?: () => void;
+    };
+  };
+  className?: string;
+}
+
+const defaultShaderSource = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 resolution;
+uniform float time;
+uniform vec2 move;
+uniform vec2 touch;
+uniform int pointerCount;
+uniform float pointers[20];
+
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+
+float rnd(vec2 p) {
+  p=fract(p*vec2(12.9898,78.233));
+  p+=dot(p,p+34.56);
+  return fract(p.x*p.y);
+}
+
+float noise(in vec2 p) {
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.-2.*f);
+  float
+  a=rnd(i),
+  b=rnd(i+vec2(1,0)),
+  c=rnd(i+vec2(0,1)),
+  d=rnd(i+1.);
+  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+}
+
+float fbm(vec2 p) {
+  float t=.0, a=1.; mat2 m=mat2(1.,-.5,.2,1.2);
+  for (int i=0; i<5; i++) {
+    t+=a*noise(p);
+    p*=2.*m;
+    a*=.5;
+  }
+  return t;
+}
+
+float clouds(vec2 p) {
+	float d=1., t=.0;
+	for (float i=.0; i<3.; i++) {
+		float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);
+		t=mix(t,d,a);
+		d=a;
+		p*=2./(i+1.);
+	}
+	return t;
+}
+
+void main(void) {
+	vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
+	vec3 col=vec3(0);
+	float bg=clouds(vec2(st.x+T*.5,-st.y));
+	uv*=1.-.3*(sin(T*.2)*.5+.5);
+	for (float i=1.; i<12.; i++) {
+		uv+=.1*cos(i*vec2(.1+.01*i, .8)+i*i+T*.5+.1*uv.x);
+		vec2 p=uv;
+		float d=length(p);
+		col+=.00125/d*(cos(sin(i)*vec3(1,2,3))+1.);
+		float b=noise(i+p+bg*1.731);
+		col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+		col=mix(col,vec3(bg*.25,bg*.137,bg*.05),d);
+	}
+	O=vec4(col,1);
+}`;
+
+// WebGL Renderer class
+class WebGLRenderer {
+  private canvas: HTMLCanvasElement;
+  private gl: WebGL2RenderingContext;
+  private program: WebGLProgram | null = null;
+  private vs: WebGLShader | null = null;
+  private fs: WebGLShader | null = null;
+  private buffer: WebGLBuffer | null = null;
+  private scale: number;
+  private shaderSource: string;
+  private mouseMove = [0, 0];
+  private mouseCoords = [0, 0];
+  private pointerCoords = [0, 0];
+  private nbrOfPointers = 0;
+
+  private vertexSrc = `#version 300 es
+precision highp float;
+in vec4 position;
+void main(){gl_Position=position;}`;
+
+  private vertices = [-1, 1, -1, -1, 1, 1, 1, -1];
+
+  constructor(canvas: HTMLCanvasElement, scale: number) {
+    this.canvas = canvas;
+    this.scale = scale;
+    this.gl = canvas.getContext('webgl2')!;
+    this.gl.viewport(0, 0, canvas.width * scale, canvas.height * scale);
+    this.shaderSource = defaultShaderSource;
+  }
+
+  updateShader(source: string) {
+    this.reset();
+    this.shaderSource = source;
+    this.setup();
+    this.init();
+  }
+
+  updateMove(deltas: number[]) {
+    this.mouseMove = deltas;
+  }
+
+  updateMouse(coords: number[]) {
+    this.mouseCoords = coords;
+  }
+
+  updatePointerCoords(coords: number[]) {
+    this.pointerCoords = coords;
+  }
+
+  updatePointerCount(nbr: number) {
+    this.nbrOfPointers = nbr;
+  }
+
+  updateScale(scale: number) {
+    this.scale = scale;
+    this.gl.viewport(0, 0, this.canvas.width * scale, this.canvas.height * scale);
+  }
+
+  compile(shader: WebGLShader, source: string) {
+    const gl = this.gl;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+    }
+  }
+
+  reset() {
+    const gl = this.gl;
+    if (this.program) {
+      if (this.vs) gl.deleteShader(this.vs);
+      if (this.fs) gl.deleteShader(this.fs);
+      gl.deleteProgram(this.program);
+    }
+    if (this.buffer) gl.deleteBuffer(this.buffer);
+  }
+
+  setup() {
+    const gl = this.gl;
+    this.vs = gl.createShader(gl.VERTEX_SHADER)!;
+    this.fs = gl.createShader(gl.FRAGMENT_SHADER)!;
+    this.compile(this.vs, this.vertexSrc);
+    this.compile(this.fs, this.shaderSource);
+    this.program = gl.createProgram()!;
+    gl.attachShader(this.program, this.vs);
+    gl.attachShader(this.program, this.fs);
+    gl.linkProgram(this.program);
+  }
+
+  init() {
+    const gl = this.gl;
+    const program = this.program!;
+    this.buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(program, 'position');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  render(now = 0) {
+    const gl = this.gl;
+    const program = this.program;
+    if (!program) return;
+    gl.useProgram(program);
+    gl.uniform2f(gl.getUniformLocation(program, 'resolution'), this.canvas.width, this.canvas.height);
+    gl.uniform1f(gl.getUniformLocation(program, 'time'), now * 1e-3);
+    gl.uniform2f(gl.getUniformLocation(program, 'move'), this.mouseMove[0], this.mouseMove[1]);
+    gl.uniform2f(gl.getUniformLocation(program, 'touch'), this.mouseCoords[0], this.mouseCoords[1]);
+    gl.uniform1i(gl.getUniformLocation(program, 'pointerCount'), this.nbrOfPointers);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+}
+
+// Pointer Handler class
+class PointerHandler {
+  private scale: number;
+  private active = false;
+  private pointers = new Map<number, number[]>();
+  private lastCoords = [0, 0];
+  private moves = [0, 0];
+
+  constructor(element: HTMLCanvasElement, scale: number) {
+    this.scale = scale;
+    const map = (x: number, y: number) => [x * scale, element.height - y * scale];
+    element.addEventListener('pointerdown', (e) => {
+      this.active = true;
+      this.pointers.set(e.pointerId, map(e.clientX, e.clientY));
+    });
+    element.addEventListener('pointerup', (e) => {
+      if (this.pointers.size === 1) this.lastCoords = map(e.clientX, e.clientY);
+      this.pointers.delete(e.pointerId);
+      this.active = this.pointers.size > 0;
+    });
+    element.addEventListener('pointermove', (e) => {
+      if (!this.active) return;
+      this.pointers.set(e.pointerId, map(e.clientX, e.clientY));
+      this.moves = [this.moves[0] + e.movementX, this.moves[1] + e.movementY];
+    });
+  }
+  get count() { return this.pointers.size; }
+  get move() { return this.moves; }
+  get coords() { return Array.from(this.pointers.values()).flat(); }
+  get first() { return this.pointers.values().next().value || this.lastCoords; }
 }
 
 export function Hero({
-    className
+  trustBadge,
+  headline,
+  subtitle,
+  buttons,
+  className = ""
 }: HeroProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const sceneRef = useRef<{
-        camera: THREE.Camera;
-        scene: THREE.Scene;
-        renderer: THREE.WebGLRenderer;
-        uniforms: any;
-        animationId: number;
-    } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<WebGLRenderer | null>(null);
+  const pointersRef = useRef<PointerHandler | null>(null);
 
-    useEffect(() => {
-        if (!containerRef.current) return;
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
 
-        // Defer Three.js initialization to free up main thread for initial paint
-        const initTimeout = setTimeout(() => {
-            const container = containerRef.current;
-            if (!container) return;
+    rendererRef.current = new WebGLRenderer(canvas, dpr);
+    pointersRef.current = new PointerHandler(canvas, dpr);
+    rendererRef.current.setup();
+    rendererRef.current.init();
 
-            // Vertex shader
-            const vertexShader = `
-              void main() {
-                gl_Position = vec4( position, 1.0 );
-              }
-            `;
+    let animationFrameId: number;
+    const loop = (now: number) => {
+      if (rendererRef.current && pointersRef.current) {
+        rendererRef.current.updateMouse(pointersRef.current.first);
+        rendererRef.current.updatePointerCount(pointersRef.current.count);
+        rendererRef.current.updateMove(pointersRef.current.move);
+        rendererRef.current.render(now);
+      }
+      animationFrameId = requestAnimationFrame(loop);
+    };
+    loop(0);
 
-            // Fragment shader (Optimized: reduced loops)
-            const fragmentShader = `
-              #define TWO_PI 6.2831853072
-              #define PI 3.14159265359
+    const handleResize = () => {
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      rendererRef.current?.updateScale(dpr);
+    };
+    window.addEventListener('resize', handleResize);
 
-              precision highp float;
-              uniform vec2 resolution;
-              uniform float time;
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+      rendererRef.current?.reset();
+    };
+  }, []);
 
-              void main(void) {
-                vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
-                float t = time*0.06;
-                float lineWidth = 0.002;
+  return (
+    <section className={`relative w-full h-screen overflow-hidden bg-black flex flex-col items-center justify-center ${className}`}>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full object-cover touch-none pointer-events-auto"
+      />
+      
+      {/* 1. Refined Brightness & Subtle Vignette */}
+      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-30 pointer-events-none" />
 
-                vec3 color = vec3(0.0);
-                for(int j = 0; j < 3; j++){
-                  for(int i=0; i < 3; i++){ // Reduced from 5 to 3 for performance
-                    color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
-                  }
-                }
-                
-                gl_FragColor = vec4(color[0],color[1],color[2],1.0);
-              }
-            `;
+      <div className="relative z-10 w-full max-w-[1400px] px-6 md:px-8 text-center">
+        {trustBadge && (
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full mb-8 animate-in fade-in slide-in-from-top-4 duration-1000">
+            <span className="text-white/80 text-sm font-medium font-pretendard">{trustBadge.text}</span>
+          </div>
+        )}
 
-            // Initialize Three.js scene
-            const camera = new THREE.Camera();
-            camera.position.z = 1;
+        <div className="space-y-4 mb-8">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-suit text-white tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+            {headline.line1}<br />
+            <span className="text-white/80">{headline.line2}</span>
+          </h1>
+        </div>
 
-            const scene = new THREE.Scene();
-            const geometry = new THREE.PlaneGeometry(2, 2);
+        <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto font-medium font-pretendard leading-relaxed mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
+          {subtitle}
+        </p>
 
-            const uniforms = {
-                time: { value: 1.0 },
-                resolution: { value: new THREE.Vector2() },
-            };
-
-            const material = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader,
-            });
-
-            const mesh = new THREE.Mesh(geometry, material);
-            scene.add(mesh);
-
-            const renderer = new THREE.WebGLRenderer({ 
-                antialias: false, // Turned off for performance
-                powerPreference: "high-performance"
-            });
-            
-            // Limit pixel ratio to max 2 for performance on high-dpi screens
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-            container.appendChild(renderer.domElement);
-
-            // Handle window resize
-            const onWindowResize = () => {
-                const width = container.clientWidth;
-                const height = container.clientHeight;
-                renderer.setSize(width, height);
-                uniforms.resolution.value.x = renderer.domElement.width;
-                uniforms.resolution.value.y = renderer.domElement.height;
-            };
-
-            // Initial resize
-            onWindowResize();
-            window.addEventListener("resize", onWindowResize, false);
-
-            // Animation loop
-            const animate = () => {
-                const animationId = requestAnimationFrame(animate);
-                uniforms.time.value += 0.04;
-                renderer.render(scene, camera);
-
-                if (sceneRef.current) {
-                    sceneRef.current.animationId = animationId;
-                }
-            };
-
-            // Store scene references for cleanup
-            sceneRef.current = {
-                camera,
-                scene,
-                renderer,
-                uniforms,
-                animationId: 0,
-            };
-
-            // Start animation
-            animate();
-        }, 100); // 100ms delay to allow browser to render text first
-
-        // Cleanup function
-        return () => {
-            clearTimeout(initTimeout);
-            window.removeEventListener("resize", () => {});
-
-            if (sceneRef.current) {
-                cancelAnimationFrame(sceneRef.current.animationId);
-
-                const container = containerRef.current;
-                if (container && sceneRef.current.renderer.domElement) {
-                    container.removeChild(sceneRef.current.renderer.domElement);
-                }
-
-                sceneRef.current.renderer.dispose();
-                // geometry.dispose() and material.dispose() are safe here
-            }
-        };
-    }, []);
-
-    return (
-        <section id="hero" className={`relative w-full h-screen overflow-hidden bg-black ${className || ''}`}>
-            {/* Shader Background Container */}
-            <div
-                ref={containerRef}
-                className="absolute inset-0 z-0"
-            />
-
-            {/* Gradient Overlay for Smooth Transition to next section */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10" />
-
-            {/* Center Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-black/20 z-10" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_70%)] z-10" />
-
-            {/* Content Layer */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 w-full max-w-[1400px] px-6 flex flex-col items-center gap-12 pointer-events-none">
-                <div className="flex flex-col items-center gap-4">
-                    {/* Urgency Badge (Dark Pattern) */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8, duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                    >
-                        <div className="relative flex h-2 w-2 mr-1">
-                            <motion.span
-                                animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute inline-flex h-full w-full rounded-full bg-purple-400"
-                            />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                        </div>
-                        <span className="text-[0.75rem] md:text-[0.8125rem] font-semibold text-white/90 tracking-wider font-pretendard">
-                            [Early Bird] 선착순 10팀 한정 런칭가 혜택
-                        </span>
-                    </motion.div>
-
-                    <div className="flex flex-col gap-2">
-                        <motion.h1
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                            className="text-4xl md:text-7xl lg:text-[88px] font-bold text-white tracking-tight leading-[1.1] font-suit"
-                        >
-                            고객이 이해하고,<br />
-                            신뢰하며, 문의하는<br className="md:hidden" /> 웹사이트
-                        </motion.h1>
-                    </div>
-
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.4 }}
-                        className="text-base md:text-lg text-white/70 max-w-3xl font-medium leading-[1.6] tracking-[-0.02em] font-pretendard break-keep"
-                    >
-                        서비스 소개부터 문의 흐름까지, 고객이 망설이는 지점을 먼저 정리합니다.<br className="hidden md:block" />
-                        기획·카피·디자인·개발을 하나의 흐름으로 설계해 사업을 설득하는 웹사이트를 만듭니다.
-                    </motion.p>
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="pointer-events-auto"
-                >
-                    <motion.button
-                        initial="initial"
-                        whileHover="hover"
-                        whileTap="tap"
-                        variants={{
-                            initial: { scale: 1, backgroundColor: "#ffffff" },
-                            hover: { backgroundColor: "#f0f0f0" },
-                            tap: { scale: 0.95 }
-                        }}
-                        className="px-10 py-[18px] rounded-full text-black text-[1.125rem] font-bold flex items-center gap-3 cursor-pointer border-none shadow-[0_10px_30px_rgba(255,255,255,0.1)] font-pretendard"
-                    >
-                        프로젝트 문의하기
-                        <motion.div
-                            variants={{
-                                initial: { x: 0 },
-                                hover: {
-                                    x: [0, 8, 0],
-                                    transition: {
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }
-                                }
-                            }}
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </motion.div>
-                    </motion.button>
-                </motion.div>
-            </div>
-        </section>
-    );
+        {buttons && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-600">
+            {buttons.primary && (
+              <button 
+                onClick={buttons.primary.onClick}
+                className="w-full sm:w-auto px-10 py-[18px] bg-white text-black rounded-full font-bold text-lg hover:bg-white/90 transition-all hover:scale-105 active:scale-95 font-pretendard"
+              >
+                {buttons.primary.text}
+              </button>
+            )}
+            {buttons.secondary && (
+              <button 
+                onClick={buttons.secondary.onClick}
+                className="w-full sm:w-auto px-10 py-[18px] bg-white/5 text-white border border-white/10 rounded-full font-bold text-lg hover:bg-white/10 transition-all hover:scale-105 active:scale-95 backdrop-blur-xl font-pretendard"
+              >
+                {buttons.secondary.text}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
 }

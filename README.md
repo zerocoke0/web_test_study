@@ -40,6 +40,10 @@
   - 무거운 애니메이션(`animate-pulse`) 최적화 및 메인 스레드 점유 시간 단축.
 - **Bundle Optimization**: `next/dynamic`을 활용하여 화면 하단(Below the fold) 컴포넌트의 지연 로딩 구현.
 - **SEO & Metadata**: 테마 컬러, 뷰포트 설정, Apple 아이콘 등 필수 메타데이터 보강을 통한 Best Practices 점수 개선.
+- **High-Performance Visuals**: 
+  - Three.js/WebGL 기반의 커스텀 쉐이더 백그라운드 도입으로 독보적인 브랜드 무드 연출.
+  - 마우스/터치 인터랙션에 실시간 반응하는 역동적인 비주얼 시스템 구축.
+  - 가독성 보호를 위한 시네마틱 비네트(Vignette) 및 텍스트 섀도우 레이어 적용.
 
 ## 📝 개발 가이드라인
 
